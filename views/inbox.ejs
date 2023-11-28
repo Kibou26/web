@@ -1,0 +1,39 @@
+<!-- views/inbox.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inbox</title>
+</head>
+
+<body>
+    <h1>Inbox</h1>
+    <p>Welcome,
+        <%= user.full_name %>! <a href="/signout">Sign out</a></p>
+    <% if (emails.length === 0) { %>
+        <p>No emails in the inbox</p>
+        <% } else { %>
+            <% emails.forEach(email => { %>
+                <div>
+                    <p>From:
+                        <%= email.sender_name %>
+                    </p>
+                    <p>Subject:
+                        <%= email.subject || '(no subject)' %>
+                    </p>
+                    <p>Received:
+                        <%= email.timestamp %>
+                    </p>
+                    <a href="/email/<%= email.id %>">Read</a>
+                    <!-- Add checkbox here if you implement the delete feature -->
+                </div>
+                <% }); %>
+                    <!-- Add pagination links here -->
+                    <% } %>
+                        <!-- Add delete button here if you implement the delete feature -->
+                        <a href="/compose">Compose</a>
+</body>
+
+</html>

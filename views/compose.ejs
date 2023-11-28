@@ -1,0 +1,42 @@
+<!-- views/compose.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compose</title>
+</head>
+
+<body>
+    <h1>Compose Email</h1>
+    <p>Welcome,
+        <%= user.full_name %>! <a href="/signout">Sign out</a></p>
+    <% if (error) { %>
+        <p style="color: red;">
+            <%= error %>
+        </p>
+        <% } %>
+            <form method="post" action="/compose" enctype="multipart/form-data">
+                <label for="recipient">Recipient:</label>
+                <select id="recipient" name="recipient" required>
+            <% users.forEach(u => { %>
+                <option value="<%= u.id %>"><%= u.full_name %></option>
+            <% }); %>
+        </select>
+                <br>
+                <label for="subject">Subject:</label>
+                <input type="text" id="subject" name="subject">
+                <br>
+                <label for="body">Body:</label>
+                <textarea id="body" name="body"></textarea>
+                <br>
+                <label for="attachment">Attachment:</label>
+                <input type="file" id="attachment" name="attachment">
+                <br>
+                <button type="submit">Send</button>
+            </form>
+            <a href="/inbox">Back to Inbox</a>
+</body>
+
+</html>

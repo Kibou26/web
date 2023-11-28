@@ -1,0 +1,33 @@
+<!-- views/email_detail.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Detail</title>
+</head>
+
+<body>
+    <h1>Email Detail</h1>
+    <p>Welcome,
+        <%= user.full_name %>! <a href="/signout">Sign out</a></p>
+    <p>From:
+        <%= email.sender_name %>
+    </p>
+    <p>To:
+        <%= email.receiver_name %>
+    </p>
+    <p>Subject:
+        <%= email.subject || '(no subject)' %>
+    </p>
+    <p>Body:
+        <%= email.body %>
+    </p>
+    <% if (email.file_path) { %>
+        <p>Attachment: <a href="<%= email.file_path %>">Download</a></p>
+        <% } %>
+            <a href="/inbox">Back to Inbox</a>
+</body>
+
+</html>

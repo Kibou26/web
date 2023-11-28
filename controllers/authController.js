@@ -1,17 +1,10 @@
-const passport = require('passport');
-const pool = require('../dbsetup');
+const express = require('express');
+const router = express.Router();
 
-// Display the sign-in form
-exports.showSignInForm = (req, res) => {
-    if (req.isAuthenticated()) {
-        return res.redirect('/inbox');
-    }
-    res.render('signin', { message: req.flash('error') });
-};
-
-// Process the sign-in form
-exports.signIn = passport.authenticate('local', {
-    successRedirect: '/inbox',
-    failureRedirect: '/signin',
-    failureFlash: true
+router.get('/signin', (req, res) => {
+    res.render('signin', { error: req.flash('error') });
 });
+
+// Other routes and logic
+
+module.exports = router;

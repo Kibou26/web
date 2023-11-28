@@ -1,21 +1,26 @@
-<!-- views/signin/signin.ejs -->
-<html>
+<!-- views/signin.ejs -->
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign In</title>
 </head>
 
 <body>
     <h1>Sign In</h1>
-    <form action="/signin" method="post">
-        <label for="email">Email:</label>
-        <input type="text" id="email" name="email" required>
-        <br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-        <br>
-        <button type="submit">Sign In</button>
-    </form>
+    <% if (error) { %>
+        <p style="color: red;">
+            <%= error %>
+        </p>
+        <% } %>
+            <form action="/auth/signin" method="post">
+                <input type="text" name="email" placeholder="Email">
+                <input type="password" name="password" placeholder="Password">
+                <button type="submit">Sign In</button>
+            </form>
+            <p>Don't have an account? <a href="/signup">Sign up</a></p>
 </body>
 
 </html>

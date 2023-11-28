@@ -1,5 +1,4 @@
 const mysql = require('mysql2');
-const bcrypt = require('bcrypt');
 
 // Database connection pool configuration
 const pool = mysql.createPool({
@@ -12,67 +11,106 @@ const pool = mysql.createPool({
     queueLimit: 0,
 });
 
-module.exports = pool;
+// Drop existing tables (if any)
+const dropTablesQuery = `
+    DROP TABLE IF EXISTS emails, users;
+`;
 
-// Create tables and insert data
-pool.getConnection((err, connection) => {
-    if (err) {
-        console.error('Error getting connection from pool:', err);
+pool.query(dropTablesQuery, (dropTablesErr, dropTablesResults) => {
+    if (dropTablesErr) {
+        console.error('Error dropping tables:', dropTablesErr);
+        pool.end(); // End the database connection pool in case of an error
         return;
     }
 
-    console.log('Connected to MySQL');
+    console.log('Tables dropped successfully');
 
-    // Drop existing tables (if any)
-    const dropTablesQuery = `
-      DROP TABLE IF EXISTS emails, users;
-  `;
-
-    connection.query(dropTablesQuery, (dropTablesErr, dropTablesResults) => {
-        if (dropTablesErr) {
-            console.error('Error dropping tables:', dropTablesErr);
-            connection.release();
-            return;
-        }
-
-        console.log('Tables dropped successfully');
-
-        // Create tables
-        const createTablesQueries = [
-            `
+    // Create users table
+    const createUsersTableQuery = `
         CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY,
-            username VARCHAR(255) NOT NULL,
+            full_name VARCHAR(255) NOT NULL,
             email VARCHAR(255) NOT NULL UNIQUE,
             password VARCHAR(255) NOT NULL
         );
-      `,
-            `
-        CREATE TABLE IF NOT EXISTS emails (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            sender_id INT NOT NULL,
-            receiver_id INT NOT NULL,
-            subject VARCHAR(255),
-            body TEXT,
-            timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (sender_id) REFERENCES users(id),
-            FOREIGN KEY (receiver_id) REFERENCES users(id)
-        );
-      `,
-        ];
+    `;
 
-        // Execute each create table query
-        createTablesQueries.forEach((createTableQuery, index) => {
-            connection.query(createTableQuery, (createTablesErr, createTablesResults) => {
-                if (createTablesErr) {
-                    console.error(`Error creating table ${index + 1}:`, createTablesErr);
-                } else {
-                    console.log(`Table ${index + 1} created successfully`);
+    pool.query(createUsersTableQuery, (createUsersErr, createUsersResults) => {
+        if (createUsersErr) {
+            console.error('Error creating users table:', createUsersErr);
+            pool.end();
+            return;
+        }
+
+        console.log('Users table created successfully');
+
+        // Insert user data
+        const insertUsersQuery = `
+            INSERT INTO users (full_name, email, password) VALUES
+            ('User 1', 'a@a.com', 'pass123'),
+            ('User 2', 'b@b.com', 'hashed_password_2'),
+            ('User 3', 'c@c.com', 'hashed_password_3');
+        `;
+
+        pool.query(insertUsersQuery, (insertUsersErr, insertUsersResults) => {
+            if (insertUsersErr) {
+                console.error('Error inserting user data:', insertUsersErr);
+                pool.end();
+                return;
+            }
+
+            console.log('User data inserted successfully');
+
+            // Create emails table
+            const createEmailsTableQuery = `
+                CREATE TABLE IF NOT EXISTS emails (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    sender_id INT NOT NULL,
+                    receiver_id INT NOT NULL,
+                    subject VARCHAR(255),
+                    body TEXT,
+                    file_path VARCHAR(255),
+                    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (sender_id) REFERENCES users(id),
+                    FOREIGN KEY (receiver_id) REFERENCES users(id)
+                );
+            `;
+
+            pool.query(createEmailsTableQuery, (createEmailsErr, createEmailsResults) => {
+                if (createEmailsErr) {
+                    console.error('Error creating emails table:', createEmailsErr);
+                    pool.end();
+                    return;
                 }
+
+                console.log('Emails table created successfully');
+
+                // Insert email data
+                const insertEmailsQuery = `
+                    INSERT INTO emails (sender_id, receiver_id, subject, body, file_path) VALUES
+                    (1, 2, 'Hello User 2', 'How are you?', NULL),
+                    (2, 1, 'Hi User 1', 'I am fine, thank you!', NULL),
+                    (1, 3, 'Meeting Tomorrow', 'Let''s meet tomorrow at 2 PM.', NULL),
+                    (3, 1, 'Re: Meeting Tomorrow', 'Sure! I''ll be there.', NULL),
+                    (2, 3, 'Project Update', 'Attached is the latest project update.', '/path/to/file.txt'),
+                    (3, 2, 'Re: Project Update', 'Thanks! I will review it soon.', NULL);
+                `;
+
+                pool.query(insertEmailsQuery, (insertEmailsErr, insertEmailsResults) => {
+                    if (insertEmailsErr) {
+                        console.error('Error inserting email data:', insertEmailsErr);
+                        pool.end();
+                        return;
+                    }
+
+                    console.log('Email data inserted successfully');
+                    // Note: You might want to keep the pool open for the duration of your application's runtime
+                    // pool.end(); // Close the database connection pool after all operations
+
+                });
             });
         });
-
-        // Release the connection back to the pool
-        connection.release();
     });
 });
+
+module.exports = pool;
